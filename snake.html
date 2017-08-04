@@ -1,12 +1,24 @@
 <canvas id="gc" width="400" height="400"></canvas>
+<img id="apple" src="apple.png" style="display:none;">
+<img id="snake-head-up" src="snake-head-up.png" style="display:none;">
+<img id="snake-head-down" src="snake-head-down.png" style="display:none;">
+<img id="snake-head-left" src="snake-head-left.png" style="display:none;">
+<img id="snake-head-right" src="snake-head-right.png" style="display:none;">
+<img id="snake-tail-up" src="snake-tail-up.png" style="display:none;">
+<img id="snake-tail-down" src="snake-tail-down.png" style="display:none;">
+<img id="snake-tail-left" src="snake-tail-left.png" style="display:none;">
+<img id="snake-tail-right" src="snake-tail-right.png" style="display:none;">
+
 <script>
   var snakeX, snakeY;
   var gs, tc;
   var appleX, applyY;
   var xv, yv;
-  var trail = [];
+  var trail;
   var tail;
   var gStarted;
+  var canv;
+  var imgSnakeHead, imgSnakeTail;
 
   window.onload = function() {
     canv = document.getElementById("gc");
@@ -17,6 +29,7 @@
   }
 
   function game() {
+    
     snakeX += xv;
     snakeY += yv;
     if (snakeX < 0) {
@@ -34,15 +47,7 @@
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canv.width, canv.height);
 
-    ctx.fillStyle = "lime";
-    for (var i = 0; i < trail.length; i++) {
-      ctx.fillRect(trail[i].x * gs, trail[i].y * gs, gs - 2, gs - 2);
-
-      if (gStarted && trail[i].x == snakeX && trail[i].y == snakeY) {
-        console.log('game over');
-        initGame();
-      }
-    }
+    drawSnake();
 
     trail.push({
       x: snakeX,
@@ -58,8 +63,60 @@
       generateApple();
     }
 
-    ctx.fillStyle = "red";
-    ctx.fillRect(appleX * gs, applyY * gs, gs - 2, gs - 2);
+    drawApple();
+
+    explainGame();
+  }
+
+  function drawSnake() {
+    for (var i = 0; i < trail.length; i++) {
+
+        //draw head
+        if(i == trail.length - 1) {
+          ctx.drawImage(imgSnakeHead, trail[i].x * gs, trail[i].y * gs, gs - 2, gs - 2);
+        } else if (i == 0) { //draw tail
+          findSnakeTailDirection();
+          
+          ctx.drawImage(imgSnakeTail, trail[i].x * gs, trail[i].y * gs, gs - 2, gs - 2);
+        } else {
+          ctx.fillStyle = "lime";
+          ctx.fillRect(trail[i].x * gs, trail[i].y * gs, gs - 2, gs - 2); 
+        }
+
+        if (gStarted && trail[i].x == snakeX && trail[i].y == snakeY) {
+          initGame();
+        }
+    }
+  }
+
+  function findSnakeTailDirection() {
+    
+
+    if (trail.length > 1) {
+      var currentPosition = trail[0];
+      var nextPosition = trail[1];
+
+      if (nextPosition.x > currentPosition.x) { // going right
+        imgSnakeTail = document.getElementById("snake-tail-right");
+      } else if (nextPosition.x < currentPosition.x) { // going left
+        imgSnakeTail = document.getElementById("snake-tail-left");
+      } else if (nextPosition.y > currentPosition.y) { //going down
+        imgSnakeTail = document.getElementById("snake-tail-down");
+      } else { // going up
+        imgSnakeTail = document.getElementById("snake-tail-up");
+      }
+      
+    }
+  }
+
+  function drawApple() {
+    //draw image
+    var imgApple = document.getElementById("apple");
+    ctx.drawImage(imgApple, appleX * gs, applyY * gs, gs, gs);
+
+    //draw red square
+    //ctx.fillStyle = "red";
+    //ctx.fillRect(appleX * gs, applyY * gs, gs - 2, gs - 2);
   }
 
   function generateApple() {
@@ -86,23 +143,32 @@
     trail = [];
     tail = 5;
     gStarted = false;
+    imgSnakeHead = document.getElementById("snake-head-down");
+    imgSnakeTail = document.getElementById("snake-tail-down");
     randomApple();
   }
 
   function keyPush(evt) {
     switch (evt.keyCode) {
       case 37: //left
-        move(-1, 0);
+        if (move(-1, 0)) {
+          imgSnakeHead = document.getElementById("snake-head-left");
+        }
         break;
       case 38: //up
-        move(0, -1);
+        if(move(0, -1)){
+          imgSnakeHead = document.getElementById("snake-head-up");
+        }
         break;
       case 39: //right
-        move(1, 0);
+        if(move(1, 0)) {
+          imgSnakeHead = document.getElementById("snake-head-right");
+        }
         break;
       case 40: //down
-        move(0, 1);
-
+        if(move(0, 1)) {
+          imgSnakeHead = document.getElementById("snake-head-down");
+        }
         break;
     }
   }
@@ -113,8 +179,12 @@
     if (validateNewVelocity(newXV, newYV)) {
       xv = newXV;
       yv = newYV;
+      game();
+
+      return true;
     }
 
+    return false;
   }
 
   //Check if new direction is valid
@@ -131,5 +201,14 @@
     }
 
     return true;
+  }
+
+  function explainGame() {
+    if(!gStarted) {
+      ctx.font = "22px Arial";
+      ctx.fillStyle = "yellow";
+      ctx.textAlign="center"; 
+      ctx.fillText("Use the Arrow Keys to Play",canv.width/2,canv.height/2);
+    }
   }
 </script>
