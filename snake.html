@@ -1,13 +1,31 @@
+<link rel="stylesheet" href="css/style.css">
+
 <canvas id="gc" width="400" height="400"></canvas>
-<img id="apple" src="apple.png" style="display:none;">
-<img id="snake-head-up" src="snake-head-up.png" style="display:none;">
-<img id="snake-head-down" src="snake-head-down.png" style="display:none;">
-<img id="snake-head-left" src="snake-head-left.png" style="display:none;">
-<img id="snake-head-right" src="snake-head-right.png" style="display:none;">
-<img id="snake-tail-up" src="snake-tail-up.png" style="display:none;">
-<img id="snake-tail-down" src="snake-tail-down.png" style="display:none;">
-<img id="snake-tail-left" src="snake-tail-left.png" style="display:none;">
-<img id="snake-tail-right" src="snake-tail-right.png" style="display:none;">
+<img id="apple" src="img/apple.png" style="display:none;">
+
+<!-- Snake Head -->
+<img id="snake-head-up" src="img/snake-head-up.png">
+<img id="snake-head-down" src="img/snake-head-down.png">
+<img id="snake-head-left" src="img/snake-head-left.png">
+
+<!-- Snake Tail -->
+<img id="snake-head-right" src="img/snake-head-right.png">
+<img id="snake-tail-up" src="img/snake-tail-up.png">
+<img id="snake-tail-down" src="img/snake-tail-down.png">
+<img id="snake-tail-left" src="img/snake-tail-left.png">
+<img id="snake-tail-right" src="img/snake-tail-right.png">
+
+<!-- Snake Body -->
+<img id="snake-body-down-left" src="img/snake-body-down-left.png">
+<img id="snake-body-down-right" src="img/snake-body-down-right.png">
+<img id="snake-body-left-down" src="img/snake-body-left-down.png">
+<img id="snake-body-left-up" src="img/snake-body-left-up.png">
+<img id="snake-body-right-down" src="img/snake-body-right-down.png">
+<img id="snake-body-right-up" src="img/snake-body-right-up.png">
+<img id="snake-body-straight-landscape" src="img/snake-body-straight-landscape.png">
+<img id="snake-body-straight-portrait" src="img/snake-body-straight-portrait.png">
+<img id="snake-body-up-left" src="img/snake-body-up-left.png">
+<img id="snake-body-up-right" src="img/snake-body-up-right.png">
 
 <script>
   var snakeX, snakeY;
@@ -18,7 +36,7 @@
   var tail;
   var gStarted;
   var canv;
-  var imgSnakeHead, imgSnakeTail;
+  var imgSnakeHead, imgSnakeTail, imgSnakeBody;
 
   window.onload = function() {
     canv = document.getElementById("gc");
@@ -28,8 +46,22 @@
     setInterval(game, 1000 / 15);
   }
 
+  function initGame() {
+    snakeX = snakeY = 10;
+    gs = 20;
+    tc = 20;
+    xv = yv = 0;
+    trail = [];
+    tail = 5;
+    gStarted = false;
+    imgSnakeHead = document.getElementById("snake-head-down");
+    imgSnakeTail = document.getElementById("snake-tail-down");
+    imgSnakeBody = document.getElementById("snake-body-straight-portrait");
+    randomApple();
+  }
+
   function game() {
-    
+
     snakeX += xv;
     snakeY += yv;
     if (snakeX < 0) {
@@ -71,26 +103,67 @@
   function drawSnake() {
     for (var i = 0; i < trail.length; i++) {
 
-        //draw head
-        if(i == trail.length - 1) {
-          ctx.drawImage(imgSnakeHead, trail[i].x * gs, trail[i].y * gs, gs - 2, gs - 2);
-        } else if (i == 0) { //draw tail
-          findSnakeTailDirection();
-          
-          ctx.drawImage(imgSnakeTail, trail[i].x * gs, trail[i].y * gs, gs - 2, gs - 2);
-        } else {
-          ctx.fillStyle = "lime";
-          ctx.fillRect(trail[i].x * gs, trail[i].y * gs, gs - 2, gs - 2); 
-        }
+      //draw head
+      if (i == trail.length - 1) {
+        ctx.drawImage(imgSnakeHead, trail[i].x * gs, trail[i].y * gs, gs, gs);
+      } else if (i == 0) { //draw tail
+        findSnakeTailDirection();
 
-        if (gStarted && trail[i].x == snakeX && trail[i].y == snakeY) {
-          initGame();
-        }
+        ctx.drawImage(imgSnakeTail, trail[i].x * gs, trail[i].y * gs, gs, gs);
+      } else {
+        findSnakeBodyDirection(i);
+        ctx.drawImage(imgSnakeBody, trail[i].x * gs, trail[i].y * gs, gs, gs);
+        // ctx.fillStyle = "lime";
+        // ctx.fillRect(trail[i].x * gs, trail[i].y * gs, gs - 2, gs - 2);
+      }
+
+      if (gStarted && trail[i].x == snakeX && trail[i].y == snakeY) {
+        initGame();
+      }
+    }
+  }
+
+  function findSnakeBodyDirection(i) {
+
+
+    if (trail.length > 1) {
+      var previousPosition = trail[i - 1];
+      var currentPosition = trail[i];
+      var nextPosition = trail[i + 1];
+
+      if (nextPosition.x == currentPosition.x && nextPosition.y > currentPosition.y && previousPosition.x < currentPosition.x) {
+        imgSnakeBody = document.getElementById("snake-body-right-down");
+      } else if (nextPosition.x == currentPosition.x && nextPosition.y < currentPosition.y && previousPosition.x < currentPosition.x) {
+        imgSnakeBody = document.getElementById("snake-body-right-up");
+      } else if (nextPosition.x == currentPosition.x && nextPosition.y > currentPosition.y && previousPosition.x > currentPosition.x) {
+        imgSnakeBody = document.getElementById("snake-body-left-down");
+      } else if (nextPosition.x == currentPosition.x && nextPosition.y < currentPosition.y && previousPosition.x > currentPosition.x) {
+        imgSnakeBody = document.getElementById("snake-body-left-up");
+      } else if (nextPosition.x > currentPosition.x && nextPosition.y == currentPosition.y && previousPosition.y < currentPosition.y) {
+        imgSnakeBody = document.getElementById("snake-body-down-right");
+      } else if (nextPosition.x < currentPosition.x && nextPosition.y == currentPosition.y && previousPosition.y < currentPosition.y) {
+        imgSnakeBody = document.getElementById("snake-body-down-left");
+      } else if (nextPosition.x > currentPosition.x && nextPosition.y == currentPosition.y && previousPosition.y > currentPosition.y) {
+        imgSnakeBody = document.getElementById("snake-body-up-right");
+      } else if (nextPosition.x < currentPosition.x && nextPosition.y == currentPosition.y && previousPosition.y > currentPosition.y) {
+        imgSnakeBody = document.getElementById("snake-body-up-left");
+      } else if (nextPosition.x > currentPosition.x) { // going right
+        imgSnakeBody = document.getElementById("snake-body-straight-landscape");
+      } else if (nextPosition.x < currentPosition.x) { // going left
+        imgSnakeBody = document.getElementById("snake-body-straight-landscape");
+      } else if (nextPosition.y > currentPosition.y) { //going down
+        imgSnakeBody = document.getElementById("snake-body-straight-portrait");
+      } else if (nextPosition.y < currentPosition.y) { // going up
+        imgSnakeBody = document.getElementById("snake-body-straight-portrait");
+      } else if (nextPosition.x > currentPosition.x && nextPosition.y > currentPosition.y) {
+        imgSnakeBody = document.getElementById("snake-body-right-down");
+      }
+
     }
   }
 
   function findSnakeTailDirection() {
-    
+
 
     if (trail.length > 1) {
       var currentPosition = trail[0];
@@ -105,7 +178,7 @@
       } else { // going up
         imgSnakeTail = document.getElementById("snake-tail-up");
       }
-      
+
     }
   }
 
@@ -135,18 +208,7 @@
     applyY = Math.floor(Math.random() * tc);
   }
 
-  function initGame() {
-    snakeX = snakeY = 10;
-    gs = 20;
-    tc = 20;
-    xv = yv = 0;
-    trail = [];
-    tail = 5;
-    gStarted = false;
-    imgSnakeHead = document.getElementById("snake-head-down");
-    imgSnakeTail = document.getElementById("snake-tail-down");
-    randomApple();
-  }
+
 
   function keyPush(evt) {
     switch (evt.keyCode) {
@@ -156,17 +218,17 @@
         }
         break;
       case 38: //up
-        if(move(0, -1)){
+        if (move(0, -1)) {
           imgSnakeHead = document.getElementById("snake-head-up");
         }
         break;
       case 39: //right
-        if(move(1, 0)) {
+        if (move(1, 0)) {
           imgSnakeHead = document.getElementById("snake-head-right");
         }
         break;
       case 40: //down
-        if(move(0, 1)) {
+        if (move(0, 1)) {
           imgSnakeHead = document.getElementById("snake-head-down");
         }
         break;
@@ -204,11 +266,11 @@
   }
 
   function explainGame() {
-    if(!gStarted) {
+    if (!gStarted) {
       ctx.font = "22px Arial";
       ctx.fillStyle = "yellow";
-      ctx.textAlign="center"; 
-      ctx.fillText("Use the Arrow Keys to Play",canv.width/2,canv.height/2);
+      ctx.textAlign = "center";
+      ctx.fillText("Use the Arrow Keys to Play", canv.width / 2, canv.height / 2);
     }
   }
 </script>
