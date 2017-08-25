@@ -1,0 +1,2 @@
+Bug:
+Snake body when changes screen boundaries.
